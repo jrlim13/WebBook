@@ -1,0 +1,165 @@
+/* ============================================================
+   glass.css — Liquid Glass material utilities (iOS 26)
+   ============================================================ */
+
+.glass {
+  position: relative;
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur) var(--glass-vibrancy);
+  backdrop-filter: var(--glass-blur) var(--glass-vibrancy);
+  border: 1px solid var(--glass-stroke);
+  box-shadow: var(--glass-spec-light), var(--glass-spec-dark), var(--depth-1);
+  border-radius: var(--r-lg);
+  isolation: isolate;
+  overflow: hidden;
+}
+
+/* Inner refraction layer — a subtle gradient that adds depth and warmth
+   so the material doesn't read as a flat translucent pane. */
+.glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(
+      120% 80% at 20% 0%,
+      color-mix(in oklab, white 28%, transparent) 0%,
+      transparent 55%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in oklab, white 10%, transparent) 0%,
+      transparent 40%,
+      color-mix(in oklab, #2b1f15 12%, transparent) 100%
+    );
+  pointer-events: none;
+  z-index: 0;
+  mix-blend-mode: screen;
+  opacity: 0.9;
+}
+
+/* Edge highlight ring — Liquid Glass signature */
+.glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklab, white 14%, transparent),
+    inset 0 1px 1px color-mix(in oklab, white 70%, transparent),
+    inset 0 -8px 20px color-mix(in oklab, #2b1f15 12%, transparent);
+}
+
+.glass > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Variant — stronger material for sheets that need more presence */
+.glass--prominent {
+  background: var(--glass-bg-strong);
+  box-shadow: var(--glass-spec-light), var(--glass-spec-dark), var(--depth-2);
+}
+
+/* Fallback for browsers without backdrop-filter (rare) */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass {
+    background: color-mix(in oklab, var(--c-coffee) 75%, white 25%);
+  }
+}
+
+/* ---------- Icon button (used inside glass and elsewhere) ---------- */
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-pill);
+  color: var(--c-cream);
+  transition: background var(--t-quick) var(--ease-out),
+    transform var(--t-quick) var(--ease-out);
+}
+
+.icon-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+.icon-btn:hover {
+  background: color-mix(in oklab, white 14%, transparent);
+}
+
+.icon-btn:active {
+  transform: scale(0.92);
+  background: color-mix(in oklab, white 22%, transparent);
+}
+
+.icon-btn[aria-pressed="true"] {
+  color: var(--c-gold);
+  background: color-mix(in oklab, var(--c-gold) 18%, transparent);
+}
+
+.aa {
+  font-family: var(--ui-font);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.aa--sm {
+  font-size: 13px;
+}
+
+.aa--lg {
+  font-size: 19px;
+}
+
+/* ---------- Segmented control ---------- */
+
+.seg {
+  display: inline-flex;
+  align-items: stretch;
+  padding: 4px;
+  background: color-mix(in oklab, #2b1f15 22%, transparent);
+  border-radius: var(--r-pill);
+  border: 1px solid var(--glass-stroke);
+  box-shadow: inset 0 1px 0 color-mix(in oklab, white 30%, transparent);
+}
+
+.seg__btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: var(--r-pill);
+  color: var(--c-cream);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition: background var(--t-quick) var(--ease-out),
+    color var(--t-quick) var(--ease-out),
+    transform var(--t-quick) var(--ease-out);
+}
+
+.seg__btn:hover {
+  background: color-mix(in oklab, white 8%, transparent);
+}
+
+.seg__btn[aria-checked="true"],
+.seg__btn[aria-pressed="true"] {
+  background: color-mix(in oklab, white 90%, transparent);
+  color: var(--c-coffee);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 color-mix(in oklab, white 80%, transparent);
+}
+
+.seg__btn:active {
+  transform: scale(0.96);
+}

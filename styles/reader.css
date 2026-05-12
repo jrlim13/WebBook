@@ -1,0 +1,865 @@
+/* ============================================================
+   reader.css — background, layout, book/page styles,
+                StPageFlip overrides, settings sheet
+   ============================================================ */
+
+/* ---------- Background — warm palette, blobs, grain ---------- */
+
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.bg__gradient {
+  position: absolute;
+  inset: -10%;
+  background:
+    radial-gradient(
+      60% 80% at 18% 12%,
+      #99582a 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      55% 70% at 82% 8%,
+      #6f1d1b 0%,
+      transparent 65%
+    ),
+    radial-gradient(
+      80% 90% at 50% 110%,
+      #432818 0%,
+      #2a180f 70%
+    ),
+    linear-gradient(180deg, #432818 0%, #2a180f 100%);
+}
+
+.bg__blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.65;
+  mix-blend-mode: screen;
+  will-change: transform;
+}
+
+.bg__blob--1 {
+  width: 46vmax;
+  height: 46vmax;
+  left: -10vmax;
+  top: -16vmax;
+  background: radial-gradient(closest-side, #bb9457, transparent 70%);
+  animation: drift 22s ease-in-out infinite alternate;
+}
+
+.bg__blob--2 {
+  width: 52vmax;
+  height: 52vmax;
+  right: -18vmax;
+  top: 6vmax;
+  background: radial-gradient(closest-side, #6f1d1b, transparent 70%);
+  animation: drift 28s ease-in-out -6s infinite alternate;
+}
+
+.bg__blob--3 {
+  width: 60vmax;
+  height: 60vmax;
+  left: 18vmax;
+  bottom: -28vmax;
+  background: radial-gradient(closest-side, #ffe6a7, transparent 75%);
+  opacity: 0.42;
+  animation: drift 34s ease-in-out -12s infinite alternate;
+}
+
+@keyframes drift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(4vmax, -3vmax, 0) scale(1.08);
+  }
+}
+
+.bg__grain {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' seed='3'/><feColorMatrix type='matrix' values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.18 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  opacity: 0.35;
+  mix-blend-mode: overlay;
+}
+
+/* ---------- App shell ---------- */
+
+.app {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 0;
+  padding: max(env(safe-area-inset-top), var(--s-3))
+    max(env(safe-area-inset-right), var(--s-3))
+    max(env(safe-area-inset-bottom), var(--s-3))
+    max(env(safe-area-inset-left), var(--s-3));
+}
+
+@media (max-width: 700px) {
+  .app {
+    padding: max(env(safe-area-inset-top), var(--s-2))
+      max(env(safe-area-inset-right), var(--s-2))
+      max(env(safe-area-inset-bottom), var(--s-2))
+      max(env(safe-area-inset-left), var(--s-2));
+  }
+}
+
+/* ---------- Toolbars ---------- */
+
+.toolbar {
+  display: grid;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-2) var(--s-3);
+  min-height: var(--toolbar-h);
+  transition: opacity var(--t-med) var(--ease-out),
+    transform var(--t-med) var(--ease-out);
+  z-index: 5;
+}
+
+.toolbar--top {
+  grid-template-columns: auto 1fr auto;
+  margin-bottom: var(--s-3);
+}
+
+.toolbar--bottom {
+  grid-template-columns: 1fr auto;
+  padding: var(--s-3) var(--s-4);
+  min-height: var(--toolbar-h-bottom);
+  margin-top: var(--s-3);
+}
+
+@media (max-width: 700px) {
+  .toolbar--top {
+    margin-bottom: var(--s-2);
+    padding: var(--s-2) var(--s-2);
+  }
+
+  .toolbar--bottom {
+    margin-top: var(--s-2);
+    padding: var(--s-2) var(--s-3);
+    gap: var(--s-3);
+  }
+}
+
+.toolbar__title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-width: 0;
+}
+
+.toolbar__book-title {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--c-cream);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60vw;
+}
+
+.toolbar__book-author {
+  font-size: 11px;
+  font-weight: 500;
+  color: color-mix(in oklab, var(--c-cream) 75%, transparent);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 420px) {
+  .toolbar__book-author {
+    display: none;
+  }
+  .toolbar__book-title {
+    font-size: 14px;
+    max-width: 50vw;
+  }
+  .toolbar__nav .icon-btn {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+.toolbar__actions {
+  display: flex;
+  gap: var(--s-2);
+  align-items: center;
+}
+
+.toolbar__nav {
+  display: flex;
+  gap: var(--s-1);
+  align-items: center;
+}
+
+/* Auto-hide chrome */
+.chrome-hidden .toolbar--top {
+  opacity: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+}
+
+.chrome-hidden .toolbar--bottom {
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+}
+
+/* ---------- Progress ---------- */
+
+.progress {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.progress__meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--s-3);
+  font-size: 12px;
+  color: color-mix(in oklab, var(--c-cream) 80%, transparent);
+}
+
+.progress__chapter {
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 60ch;
+}
+
+.progress__pages {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  flex-shrink: 0;
+  color: color-mix(in oklab, var(--c-cream) 65%, transparent);
+}
+
+.progress__track {
+  position: relative;
+  height: 4px;
+  border-radius: var(--r-pill);
+  background: color-mix(in oklab, #2b1f15 35%, transparent);
+  overflow: hidden;
+}
+
+.progress__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0%;
+  background: linear-gradient(90deg, var(--c-gold), var(--c-cream));
+  border-radius: inherit;
+  transition: width var(--t-med) var(--ease-out);
+  box-shadow: 0 0 8px color-mix(in oklab, var(--c-gold) 50%, transparent);
+}
+
+@media (max-width: 700px) {
+  .progress {
+    gap: 5px;
+  }
+
+  .progress__meta {
+    font-size: 11px;
+  }
+
+  .progress__track {
+    height: 3px;
+  }
+}
+
+@media (max-width: 390px) {
+  .progress__chapter {
+    max-width: 32vw;
+  }
+}
+
+/* ---------- Stage / book / desk ---------- */
+
+.stage {
+  position: relative;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  /* Extra bottom padding separates the book shadow from the toolbar */
+  padding: var(--s-4) var(--s-4) var(--s-7);
+}
+
+@media (max-width: 700px) {
+  .stage {
+    /* Tighter but symmetric padding; extra bottom gap keeps toolbar off the page */
+    padding: var(--s-2) var(--s-3) var(--s-4);
+    /* Stretch the book to fill the grid cell height instead of centering it */
+    align-items: stretch;
+    justify-items: center;
+  }
+}
+
+.stage__desk {
+  position: absolute;
+  inset: 8% 4% 6% 4%;
+  border-radius: 32px;
+  background:
+    radial-gradient(
+      120% 80% at 50% 100%,
+      rgba(0, 0, 0, 0.5),
+      transparent 70%
+    );
+  filter: blur(20px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.book {
+  position: relative;
+  z-index: 1;
+  width: min(96vw, 1180px);
+  aspect-ratio: 3 / 2;
+  /*
+   * Cap height to what fits inside the stage on any viewport.
+   * 116px = app-padding-v(24) + toolbar-margins(24) + stage-pad-top(16)
+   *         + stage-pad-bottom(32) + 20px safety buffer.
+   * Using 100vh (reliable on desktop) with explicit toolbar variables.
+   */
+  max-height: min(
+    calc(100vh - var(--toolbar-h) - var(--toolbar-h-bottom) - 116px),
+    820px
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 900px) {
+  .book {
+    aspect-ratio: 3 / 4;
+    width: min(96vw, 560px);
+    max-height: min(
+      calc(100vh - var(--toolbar-h) - var(--toolbar-h-bottom) - 116px),
+      820px
+    );
+  }
+}
+
+@media (max-width: 700px) {
+  .book {
+    /* Fill stage width (stage padding handles side margins) */
+    width: 100%;
+    max-width: 480px;
+    /* Height comes from the grid stretch — no explicit calc needed */
+    aspect-ratio: unset;
+    max-height: none;
+  }
+}
+
+/* Short landscape (e.g., phone rotated): keep two-page spread but shorter */
+@media (max-height: 520px) and (min-width: 700px) {
+  .book {
+    aspect-ratio: 3 / 2;
+    width: min(94vw, 1000px);
+    max-height: 84vh;
+  }
+}
+
+/* StPageFlip injects its own DOM under #book; we style its pages via .page */
+.stf__parent {
+  perspective: 2200px;
+}
+
+.stf__block {
+  filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.32))
+    drop-shadow(0 30px 60px rgba(0, 0, 0, 0.36));
+}
+
+/* ---------- Pages ---------- */
+
+.page {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--serif-font);
+  font-size: var(--reader-font-size);
+  line-height: var(--reader-line-height);
+  letter-spacing: 0.005em;
+  overflow: hidden;
+  padding: 3%;
+  display: flex;
+  flex-direction: column;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px rgba(67, 40, 24, 0.05);
+}
+
+[data-paper="white"] .page {
+  --paper: var(--paper-white);
+}
+
+[data-paper="sepia"] .page {
+  --paper: var(--paper-sepia);
+}
+
+/* Paper texture — subtle grain on every page */
+.page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='7'/><feColorMatrix type='matrix' values='0 0 0 0 0.16  0 0 0 0 0.11  0 0 0 0 0.07  0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23p)'/></svg>");
+  opacity: 0.55;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+
+/* Spine-side fade — slight inner shadow toward the spine */
+.page::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 18%;
+  pointer-events: none;
+}
+
+.page--left::after {
+  right: 0;
+  background: linear-gradient(
+    270deg,
+    rgba(67, 40, 24, 0.12) 0%,
+    transparent 100%
+  );
+}
+
+.page--right::after {
+  left: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(67, 40, 24, 0.12) 0%,
+    transparent 100%
+  );
+}
+
+/* Page content typography */
+.page__content {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  text-align: justify;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  word-spacing: 0.02em;
+}
+
+.page__content p {
+  margin: 0 0 0.65em 0;
+  text-indent: 1.4em;
+}
+
+.page__content p:first-child {
+  text-indent: 0;
+}
+
+.page__content p.no-indent {
+  text-indent: 0;
+}
+
+.page__content h1,
+.page__content h2 {
+  font-family: var(--serif-font);
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+  margin: 0 0 0.6em 0;
+}
+
+.page__content h1 {
+  font-size: 1.6em;
+  text-align: center;
+  margin-top: 0.4em;
+}
+
+.page__content h2 {
+  font-size: 1.2em;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-align: center;
+  color: var(--c-cinnamon);
+}
+
+.page__content .dropcap::first-letter {
+  font-family: var(--serif-font);
+  font-size: 3.2em;
+  font-weight: 700;
+  float: left;
+  line-height: 0.9;
+  padding: 0.05em 0.08em 0 0;
+  color: var(--c-wine);
+}
+
+/* Page footer with page number / chapter */
+.page__footer {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--ui-font);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding-top: var(--s-3);
+  margin-top: auto;
+}
+
+/* ---------- Hard covers ---------- */
+
+.page--hard {
+  background:
+    radial-gradient(
+      120% 100% at 50% 0%,
+      color-mix(in oklab, var(--c-wine) 80%, white 0%) 0%,
+      var(--c-wine) 60%,
+      #4a0f0e 100%
+    );
+  color: var(--c-cream);
+  font-family: var(--serif-font);
+  border-radius: 4px;
+  display: grid;
+  place-items: center;
+  padding: 10%;
+  box-shadow:
+    inset 0 0 0 8px color-mix(in oklab, var(--c-gold) 40%, transparent),
+    inset 0 0 0 9px color-mix(in oklab, black 50%, transparent),
+    inset 0 0 80px rgba(0, 0, 0, 0.5);
+}
+
+.page--hard::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='c'><feTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' seed='2'/><feColorMatrix type='matrix' values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.08 0'/></filter><rect width='100%' height='100%' filter='url(%23c)'/></svg>");
+  opacity: 0.6;
+  mix-blend-mode: overlay;
+}
+
+.cover {
+  display: grid;
+  gap: var(--s-5);
+  place-items: center;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+
+.cover__rule {
+  width: 56px;
+  height: 2px;
+  background: var(--c-gold);
+  border-radius: 2px;
+}
+
+.cover__title {
+  font-family: var(--serif-font);
+  font-size: clamp(28px, 5vw, 48px);
+  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--c-cream);
+  margin: 0;
+}
+
+.cover__author {
+  font-family: var(--ui-font);
+  font-size: 12px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--c-gold);
+  margin: 0;
+}
+
+.cover__mark {
+  font-family: var(--serif-font);
+  font-style: italic;
+  font-size: 14px;
+  color: color-mix(in oklab, var(--c-cream) 80%, transparent);
+  margin: 0;
+}
+
+.cover__crest {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: color-mix(in oklab, var(--c-gold) 80%, white 0%);
+  color: var(--c-coffee);
+  box-shadow: inset 0 0 0 2px var(--c-cream);
+  font-family: var(--serif-font);
+  font-weight: 700;
+  font-size: 22px;
+}
+
+/* ---------- Tap zones (kept for a11y; click delegation handled at #stage) ---------- */
+
+.tap-zones {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  z-index: 2;
+  pointer-events: none; /* let drags reach StPageFlip; clicks delegated */
+}
+
+.tap-zone {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  pointer-events: none;
+  outline: none;
+}
+
+/* ---------- Loader ---------- */
+
+.loader {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  gap: var(--s-2);
+  z-index: 3;
+}
+
+.loader__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--c-cream);
+  opacity: 0.4;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.loader__dot:nth-child(2) {
+  animation-delay: 150ms;
+}
+
+.loader__dot:nth-child(3) {
+  animation-delay: 300ms;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+}
+
+.is-ready .loader {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--t-med) var(--ease-out),
+    visibility 0s linear var(--t-med);
+}
+
+/* ---------- Measurer (off-screen) ---------- */
+
+.measurer {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  visibility: hidden;
+  pointer-events: none;
+  font-family: var(--serif-font);
+  font-size: var(--reader-font-size);
+  line-height: var(--reader-line-height);
+  letter-spacing: 0.005em;
+  text-align: justify;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  word-spacing: 0.02em;
+}
+
+.measurer p {
+  margin: 0 0 0.65em 0;
+  text-indent: 1.4em;
+}
+
+.measurer p:first-child {
+  text-indent: 0;
+}
+
+.measurer p.no-indent {
+  text-indent: 0;
+}
+
+.measurer h1 {
+  font-family: var(--serif-font);
+  font-size: 1.6em;
+  font-weight: 700;
+  text-align: center;
+  margin: 0 0 0.6em 0;
+}
+
+.measurer h2 {
+  font-family: var(--serif-font);
+  font-size: 1.2em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-align: center;
+  margin: 0 0 0.6em 0;
+}
+
+/* ---------- Settings sheet ---------- */
+
+.sheet {
+  position: fixed;
+  z-index: 50;
+  width: min(440px, 92vw);
+  border-radius: var(--r-lg);
+  padding: 0;
+  box-shadow: var(--depth-3);
+  /* Default desktop placement — anchored under Aa button */
+  top: calc(var(--toolbar-h) + var(--s-5));
+  right: max(env(safe-area-inset-right), var(--s-5));
+  transform-origin: top right;
+  transform: translateY(-8px) scale(0.96);
+  opacity: 0;
+  transition: opacity var(--t-med) var(--ease-out),
+    transform var(--t-med) var(--ease-spring);
+}
+
+.sheet[data-open="true"] {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.sheet__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--s-4) var(--s-5);
+  border-bottom: 1px solid color-mix(in oklab, white 18%, transparent);
+}
+
+.sheet__title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--c-cream);
+}
+
+.sheet__body {
+  display: grid;
+  gap: var(--s-4);
+  padding: var(--s-5);
+}
+
+.control-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.control-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: color-mix(in oklab, var(--c-cream) 85%, transparent);
+}
+
+.sheet-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 49;
+  background: color-mix(in oklab, black 20%, transparent);
+  opacity: 0;
+  transition: opacity var(--t-med) var(--ease-out);
+}
+
+.sheet-scrim[data-open="true"] {
+  opacity: 1;
+}
+
+@media (max-width: 700px) {
+  .sheet {
+    top: auto;
+    bottom: max(env(safe-area-inset-bottom), var(--s-3));
+    left: var(--s-3);
+    right: var(--s-3);
+    width: auto;
+    transform-origin: bottom center;
+    transform: translateY(16px) scale(1);
+  }
+
+  .sheet[data-open="true"] {
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ---------- Bookmark indicator on page ---------- */
+
+.page__bookmark {
+  position: absolute;
+  top: -2px;
+  right: 18%;
+  width: 22px;
+  height: 32px;
+  background: linear-gradient(180deg, var(--c-wine), var(--c-cinnamon));
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity var(--t-med) var(--ease-out),
+    transform var(--t-med) var(--ease-spring);
+  z-index: 2;
+}
+
+.page__bookmark[data-on="true"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---------- StPageFlip cosmetic tweaks ---------- */
+
+/* The inner StPageFlip mount point — StPageFlip can safely destroy/recreate
+   this element without ever touching #book (the permanent CSS centering shell). */
+.book-stage {
+  display: contents; /* pass-through layout so stf__parent centres inside #book */
+}
+
+/* Ensure the fixed-size StPageFlip canvas is centred inside #book regardless
+   of any minor size mismatch between the CSS container and the canvas. */
+.stf__parent {
+  margin: auto;
+  flex-shrink: 0;
+}
+
+.stf__item {
+  background: var(--paper);
+}
+
+.stf__wrapper {
+  border-radius: 6px;
+  overflow: hidden;
+}
